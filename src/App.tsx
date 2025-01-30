@@ -4,15 +4,18 @@ import { Route, Link, Routes, useMatch } from "react-router-dom";
 import { Button, Divider, Container, Typography } from "@mui/material";
 
 import { apiBaseUrl } from "./constants";
-import { Patient } from "./types";
+import { Patient, Diagnosis } from "./types";
 
 import patientService from "./services/patients";
 import PatientListPage from "./components/PatientListPage";
 import PatientInfo from "./components/PatientInfo";
 
+import diagnosisService from "./services/diagnoses";
+
 const App = () => {
   const [patients, setPatients] = useState<Patient[]>([]);
   const [patient, setPatient] = useState<Patient | null>(null);
+  const [diagnoses, setDiagnoses] = useState<Diagnosis[]>([]);
 
   useEffect(() => {
     void axios.get<void>(`${apiBaseUrl}/ping`);
@@ -22,6 +25,14 @@ const App = () => {
       setPatients(patients);
     };
     void fetchPatientList();
+  }, []);
+
+  useEffect(() => {
+    const fetchDiagnosisList = async () => {
+      const diagnoses = await diagnosisService.getAll();
+      setDiagnoses(diagnoses);
+    };
+    fetchDiagnosisList();
   }, []);
 
   const match = useMatch("/api/patients/:id");
@@ -37,19 +48,6 @@ const App = () => {
       getPatient(id);
     }
   }, [id]);
-
-  //const fetchPatientData = async (id: string | undefined) => {
-  //  if (id) {
-  //    const patient = await patientService.getOne(id);
-  //    console.log(patient);
-  //    return patient;
-  //  }
-  //  return null;
-  //};
-  //console.log(match?.params.id);
-  //const patient = fetchPatientData(match?.params.id);
-  //console.log("here");
-  //console.log(patient);
 
   return (
     <div className="App">
@@ -70,7 +68,7 @@ const App = () => {
           />
           <Route
             path="/api/patients/:id"
-            element={<PatientInfo patient={patient} />}
+            element={<PatientInfo patient={patient} diagnoses={diagnoses} />}
           />
         </Routes>
       </Container>
